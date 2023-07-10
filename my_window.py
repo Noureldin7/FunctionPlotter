@@ -2,11 +2,12 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PySide2.QtWidgets import QWidget,QPushButton,QTextEdit
-from PySide2.QtGui import QFont,QKeyEvent
+from PySide2.QtWidgets import QWidget,QPushButton,QTextEdit,QMessageBox
+from PySide2.QtGui import QFont,QKeyEvent,QTextCursor
 from PySide2.QtCore import Qt
+from validate import validate
 class MyWindow(QWidget):
-    allowed_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Plus,Qt.Key_Minus,Qt.Key_Asterisk,Qt.Key_Slash,Qt.Key_AsciiCircum,Qt.Key_ParenLeft,Qt.Key_ParenRight,Qt.Key_X,Qt.Key_Backspace}
+    allowed_set:set = {Qt.Key_Left,Qt.Key_Right,Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Plus,Qt.Key_Minus,Qt.Key_Asterisk,Qt.Key_Slash,Qt.Key_AsciiCircum,Qt.Key_ParenLeft,Qt.Key_ParenRight,Qt.Key_X,Qt.Key_Backspace}
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Function Plotter")
@@ -23,22 +24,32 @@ class MyWindow(QWidget):
     def plot_click(self):
         self.axes.clear()
         # Validate Input
+        valid, msg = validate(self.text.toPlainText())
+        if valid:
         # Call the backend logic
-        self.axes.plot([1,2,3,4,5],[1,2,7,4,5])
+            self.axes.plot([1,2,3,4,5],[1,2,7,4,5])
         # Plot the returned data
-        self.canvas.show()
-        pass
+            self.canvas.show()
+        else:
+            self.error_msg = QMessageBox()
+            self.error_msg.setWindowTitle("Error")
+            self.error_msg.setText(msg)
+            self.error_msg.show()
     def keypad_click(self):
         if(self.sender().text()=="del"):
             self.text.textCursor().deletePreviousChar()
         else:
             self.text.insertPlainText(self.sender().text())
     def keypress(self,e:QKeyEvent):
-        if(e.key() in self.allowed_set):
+        if(e.key()==Qt.Key_Left):
+            self.text.moveCursor(QTextCursor.Left)
+        elif(e.key()==Qt.Key_Right):
+            self.text.moveCursor(QTextCursor.Right)
+        elif(e.key() in self.allowed_set):
             if(e.key()==Qt.Key_Backspace):
                 self.text.textCursor().deletePreviousChar()
             else:
-                self.text.insertPlainText(e.text())
+                self.text.insertPlainText(e.text().upper())
     def add_btn(self,btn:QPushButton,x,y,w,h,func,font:QFont = QFont("Arial",12)):
         btn.move(x,y)
         btn.setFixedSize(w,h)
