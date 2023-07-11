@@ -1,7 +1,14 @@
 priority = {'^':2, '*':1, '/':1, '+':0, '-':0}
 ops = {'^', '*', '/', '+', '-'}
 nums = {'0','1','2','3','4','5','6','7','8','9'}
-def validate(eqn:str):
+def validate(eqn:str,min,max):
+    try:
+        min_val = int(min)
+        max_val = int(max)
+        if min_val >= max_val:
+            return False, "Invalid range"
+    except:
+        return False, "Invalid range"
     bracket_stack = list()
     state = 0
     for char in eqn:
