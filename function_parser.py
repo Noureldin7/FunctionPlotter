@@ -1,15 +1,14 @@
 import numpy as np
 from eqn_structs import expression, symbol
-priority = {'^':2, '*':1, '/':1, '+':0, '-':0}
-ops = {'^', '*', '/', '+', '-'}
-nums = {'0','1','2','3','4','5','6','7','8','9'}
+from validate import priority, ops, nums
+nums = nums.union({'.'})
 def parse(eqn:str,min,max):
     start_expr = expression([])
     parse_rec(eqn, start_expr)
     return funcCalc(start_expr,min,max)
 def funcCalc(func:expression,min,max):
     pts = 1000
-    step = (max-min)/pts
+    step = (max-min+1)/pts
     x = np.arange(min,max,step)
     y = []
     for i in x:

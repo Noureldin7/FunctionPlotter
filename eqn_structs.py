@@ -34,7 +34,7 @@ class symbol:
         self.value = value
     def calc(self, x):
         if self.type==0:
-            return int(self.value)
+            return float(self.value)
         elif self.type==1:
             return self.value
         elif self.type==2:

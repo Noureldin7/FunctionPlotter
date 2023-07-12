@@ -1,16 +1,17 @@
 import matplotlib
 matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg,NavigationToolbar2QT
 from matplotlib.figure import Figure
 from PySide2.QtWidgets import QWidget,QPushButton,QTextEdit,QMessageBox,QApplication
 from PySide2.QtGui import QFont,QKeyEvent,QTextCursor,QFocusEvent
 from PySide2.QtCore import Qt
-from validate import validate
+from validate import validate,nums
 from plotter import config
 from function_parser import parse
+nums = nums.union({'.','-'})
 class MyWindow(QWidget):
     misc_set:set = {Qt.Key_Left,Qt.Key_Right,Qt.Key_Plus,Qt.Key_Minus,Qt.Key_Asterisk,Qt.Key_Slash,Qt.Key_AsciiCircum,Qt.Key_ParenLeft,Qt.Key_ParenRight,Qt.Key_X,Qt.Key_Backspace}
-    num_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9}
+    num_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Period,Qt.Key_Minus}
     def __init__(self,app:QApplication):
         super().__init__()
         self.app = app
@@ -19,12 +20,13 @@ class MyWindow(QWidget):
         self.move(300,50)
         self.build_gui()
         app.focusChanged.connect(self.update_focused)
-        fig = Figure(figsize=(6,4),dpi=100)
+        fig = Figure(figsize=(6.7,4),dpi=100)
         self.axes = fig.add_subplot(111)
         self.canvas = FigureCanvasQTAgg(fig)
         config(self.axes)
         self.canvas.setParent(self)
-        self.canvas.move(100,180)
+        self.canvas.move(75,180)
+        self.toolbar = NavigationToolbar2QT(self.canvas,self.canvas)
     def plot_click(self):
         self.axes.clear()
         config(self.axes)
@@ -35,7 +37,7 @@ class MyWindow(QWidget):
         valid, msg = validate(eqn_string,min_string,max_string)
         if valid:
             # Call the backend logic
-            x,y = parse(eqn_string,int(min_string),int(max_string))
+            x,y = parse(eqn_string,float(min_string),float(max_string))
             # Plot the returned data
             self.axes.plot(x,y)
             self.canvas.draw()
@@ -45,14 +47,9 @@ class MyWindow(QWidget):
             self.error_msg.setText(msg)
             self.error_msg.show()
     def key_click(self):
-        if(self.sender().text()=="del"):
+        if(self.sender().text()=="←"):
             self.focused.textCursor().deletePreviousChar()
-        elif self.focused==self.eqn:
-                self.focused.insertPlainText(self.sender().text())
-        elif self.focused==self.min or self.focused==self.max:
-            if self.sender().text()>='0' and self.sender().text()<='9':
-                self.focused.insertPlainText(self.sender().text())
-            elif self.sender().text()=="-" and self.focused.textCursor().position()==0 and self.focused.textCursor().NextCharacter!='-':
+        elif self.sender().text() in nums or self.focused==self.eqn:
                 self.focused.insertPlainText(self.sender().text())
     def key_press(self,e:QKeyEvent):
         match e.key():
@@ -65,39 +62,11 @@ class MyWindow(QWidget):
             case Qt.Key_Delete:
                 self.focused.textCursor().deleteChar()
             case _:
-                if self.focused==self.eqn and e.key() in self.num_set.union(self.misc_set):
+                if e.key() in self.num_set:
                     self.focused.insertPlainText(e.text().upper())
-                elif self.focused==self.min or self.focused==self.max:
-                    if e.key() in self.num_set:
-                        self.focused.insertPlainText(e.text())
-                    elif e.key()==Qt.Key_Minus and self.focused.textCursor().position()==0 and self.focused.textCursor().NextCharacter!='-':
-                        self.focused.insertPlainText(e.text())
-    def eqn_keypress(self,e:QKeyEvent):
-        if(e.key()==Qt.Key_Left):
-            self.focused.moveCursor(QTextCursor.Left)
-        elif(e.key()==Qt.Key_Right):
-            self.focused.moveCursor(QTextCursor.Right)
-        elif(e.key() in self.num_set.union(self.misc_set)):
-            if(e.key()==Qt.Key_Backspace):
-                self.focused.textCursor().deletePreviousChar()
-            else:
-                self.focused.insertPlainText(e.text().upper())
-    def minmax_keypress(self,e:QKeyEvent):
-        match e.key():
-            case Qt.Key_Left:
-                self.focused.moveCursor(QTextCursor.Left)
-            case Qt.Key_Right:
-                self.focused.moveCursor(QTextCursor.Right)
-            case Qt.Key_Backspace:
-                self.focused.textCursor().deletePreviousChar()
-            case Qt.Key_Delete:
-                self.focused.textCursor().deleteChar()
-            case _:
-                if(e.key() in self.num_set):
-                    self.focused.insertPlainText(e.text())
-                elif(len(self.focused.toPlainText())==0 and e.key()==Qt.Key_Minus):
-                    self.focused.insertPlainText(e.text())
-    def add_btn(self,btn:QPushButton,x,y,w,h,func,font:QFont = QFont("Arial",12)):
+                elif self.focused==self.eqn:
+                    self.focused.insertPlainText(e.text().upper())
+    def add_btn(self,btn:QPushButton,x,y,w,h,func,font:QFont = QFont("Cambria Math",12)):
         btn.move(x,y)
         btn.setFixedSize(w,h)
         btn.clicked.connect(func)
@@ -126,16 +95,18 @@ class MyWindow(QWidget):
         self.btn_var = QPushButton("X",self)
         self.btn_Lbrkt = QPushButton("(",self)
         self.btn_Rbrkt = QPushButton(")",self)
-        self.btn_del = QPushButton("del",self)
+        self.btn_dot = QPushButton(".",self)
+        self.btn_del = QPushButton("←",self)
         self.add_btn(self.btn_add,x,y,w,h,func)
         self.add_btn(self.btn_mul,x,y+step,w,h,func)
         self.add_btn(self.btn_exp,x,y+step*2,w,h,func)
         self.add_btn(self.btn_sub,x+step,y,w,h,func)
         self.add_btn(self.btn_div,x+step,y+step,w,h,func)
-        self.add_btn(self.btn_var,x+step,y+step*2,w,h,func,QFont("Cambria Math",12))
+        self.add_btn(self.btn_var,x+step,y+step*2,w,h,func)
         self.add_btn(self.btn_Lbrkt,x+step*2,y,w,h,func)
         self.add_btn(self.btn_Rbrkt,x+step*2,y+step,w,h,func)
-        self.add_btn(self.btn_del,x+step*2,y+step*2,w,h,func)
+        self.add_btn(self.btn_dot,x+step*2,y+step*2,w,h,func)
+        self.add_btn(self.btn_del,x+step,y+step*3,w,h,func)
     def build_keypad(self,x,y,w,h,step,func):
         self.keypad:list = [QPushButton("0",self)]
         hold_x = x
@@ -152,9 +123,9 @@ class MyWindow(QWidget):
         self.min = QTextEdit(self)
         self.max = QTextEdit(self)
         self.focused = self.eqn
-        self.eqn.keyPressEvent = self.eqn_keypress
-        self.min.keyPressEvent = self.minmax_keypress
-        self.max.keyPressEvent = self.minmax_keypress
+        self.eqn.keyPressEvent = self.key_press
+        self.min.keyPressEvent = self.key_press
+        self.max.keyPressEvent = self.key_press
         self.add_text(self.eqn,"Enter Equation Here",75,25,300,40,QFont("Arial",18))
         self.add_text(self.min,"Min",75,75,75,30,QFont("Arial",12))
         self.add_text(self.max,"Max",175,75,75,30,QFont("Arial",12))
