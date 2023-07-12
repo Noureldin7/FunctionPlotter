@@ -34,7 +34,7 @@ class MyWindow(QWidget):
         min_string = self.min.toPlainText()
         max_string = self.max.toPlainText()
         # Validate Input
-        valid, msg = validate(eqn_string,min_string,max_string)
+        valid, msg, eqn_string = validate(eqn_string,min_string,max_string)
         if valid:
             # Call the backend logic
             x,y = parse(eqn_string,float(min_string),float(max_string))

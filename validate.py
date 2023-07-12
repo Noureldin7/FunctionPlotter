@@ -7,36 +7,39 @@ nums = {'0','1','2','3','4','5','6','7','8','9'}
 # 3 => Got X
 # 4 => Got decimal point (Accepts only a number)
 # 5 => State Following state 4 similar to state 1 but doesn't accept decimal point
-def validate(eqn:str,min,max):
-    valid, msg = validate_eqn(eqn)
-    if not valid:
-        return valid, msg
-    valid, msg = validate_range(min,max)
-    return valid, msg
-def validate_range(min,max):
+# 6 => Dummy state to transform 2X to 2*X goes directly to state 3
+def validate(eqn:str,min,max) -> tuple[bool,str,str]:
+    eqn_obj = []
+    eqn_obj.append(eqn)
+    valid, msg = validate_eqn(eqn_obj)
+    if valid:
+        valid, msg = validate_range(min,max)
+    return valid, msg, eqn_obj[0]
+def validate_range(min,max) -> tuple[bool,str]:
+    valid = True
+    msg = "Valid"
     # Check min
     valid, msg = validate_numeric(min,"min")
-    if not valid:
-        return valid, msg
     # Check max
-    valid, msg = validate_numeric(max,"max")
-    if not valid:
-        return valid, msg
+    if valid:
+        valid, msg = validate_numeric(max,"max")
     # Check if min <= max
-    min_val = float(min)
-    max_val = float(max)
-    if min_val >= max_val:
-        return False, "Invalid range: min can't be greater than max"
-    return True, "Valid"
-def validate_numeric(string,name):
+    if valid:
+        min_val = float(min)
+        max_val = float(max)
+        if min_val > max_val:
+            valid = False
+            msg = "Invalid range: min can't be greater than max" 
+    return valid, msg
+def validate_numeric(string,name) -> tuple[bool,str]:
+    valid = False
+    msg = "Invalid range: Invalid "+name+" value"
     if len(string) == 0:
-        return False, "Invalid range: "+name+" is empty"
+        return False, "Invalid range: "+name+" is empty" 
     i = 0
     if string[0] == '-':
         i = 1
     point_flag = False
-    valid = False
-    msg = "Invalid range: Invalid "+name+" value"
     while i < len(string):
         if string[i] == '.':
             if point_flag:
@@ -54,18 +57,33 @@ def validate_numeric(string,name):
             msg = "Valid"
         i+=1
     return valid,msg
-def validate_eqn(eqn:str):
+def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
+    eqn = eqn_obj[0]
     if len(eqn) == 0:
         return False, "No Function is provided"
     bracket_stack = list()
     state = 0
-    for char in eqn:
+    i=0
+    while i < len(eqn):
+        if state == 6:
+            eqn = eqn[:i] + '*' + eqn[i:]
+            eqn_obj[0] = eqn
+            i+=2
+            state = 3
+            continue
+        char = eqn[i]
         if char=='X':
             match state:
                 case 0:
                     state = 3
+                case 1:
+                    state = 6
+                    continue
                 case 2:
                     state = 3
+                case 5:
+                    state = 6
+                    continue
                 case _:
                     return False, "Invalid syntax near " + char
         elif char in nums:
@@ -116,8 +134,9 @@ def validate_eqn(eqn:str):
                 return False, "Invalid syntax near " + char
         else:
             return False, "Unexpected character " + char
+        i+=1
     if len(bracket_stack) > 0:
         return False, "Unbalanced brackets"
-    if state == 2:
+    if state == 2 or state == 4:
         return False, "Invalid syntax near " + eqn[-1]
     return True, "Valid"
