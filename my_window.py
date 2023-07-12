@@ -11,7 +11,7 @@ from function_parser import parse
 nums = nums.union({'.','-'})
 class MyWindow(QWidget):
     misc_set:set = {Qt.Key_Left,Qt.Key_Right,Qt.Key_Plus,Qt.Key_Minus,Qt.Key_Asterisk,Qt.Key_Slash,Qt.Key_AsciiCircum,Qt.Key_ParenLeft,Qt.Key_ParenRight,Qt.Key_X,Qt.Key_Backspace}
-    num_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Period,Qt.Key_Minus}
+    num_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Period,Qt.Key_Minus,Qt.Key_E}
     def __init__(self,app:QApplication):
         super().__init__()
         self.app = app
@@ -50,7 +50,7 @@ class MyWindow(QWidget):
         if(self.sender().text()=="←"):
             self.focused.textCursor().deletePreviousChar()
         elif self.sender().text() in nums or self.focused==self.eqn:
-                self.focused.insertPlainText(self.sender().text())
+            self.focused.insertPlainText(self.sender().text())
     def key_press(self,e:QKeyEvent):
         match e.key():
             case Qt.Key_Left:
@@ -63,8 +63,8 @@ class MyWindow(QWidget):
                 self.focused.textCursor().deleteChar()
             case _:
                 if e.key() in self.num_set:
-                    self.focused.insertPlainText(e.text().upper())
-                elif self.focused==self.eqn:
+                    self.focused.insertPlainText(e.text().lower())
+                elif e.key() in self.misc_set and self.focused==self.eqn:
                     self.focused.insertPlainText(e.text().upper())
     def add_btn(self,btn:QPushButton,x,y,w,h,func,font:QFont = QFont("Cambria Math",12)):
         btn.move(x,y)
@@ -95,7 +95,6 @@ class MyWindow(QWidget):
         self.btn_var = QPushButton("X",self)
         self.btn_Lbrkt = QPushButton("(",self)
         self.btn_Rbrkt = QPushButton(")",self)
-        self.btn_dot = QPushButton(".",self)
         self.btn_del = QPushButton("←",self)
         self.add_btn(self.btn_add,x,y,w,h,func)
         self.add_btn(self.btn_mul,x,y+step,w,h,func)
@@ -105,8 +104,7 @@ class MyWindow(QWidget):
         self.add_btn(self.btn_var,x+step,y+step*2,w,h,func)
         self.add_btn(self.btn_Lbrkt,x+step*2,y,w,h,func)
         self.add_btn(self.btn_Rbrkt,x+step*2,y+step,w,h,func)
-        self.add_btn(self.btn_dot,x+step*2,y+step*2,w,h,func)
-        self.add_btn(self.btn_del,x+step,y+step*3,w,h,func)
+        self.add_btn(self.btn_del,x+step*2,y+step*2,w,h,func)
     def build_keypad(self,x,y,w,h,step,func):
         self.keypad:list = [QPushButton("0",self)]
         hold_x = x
@@ -117,7 +115,9 @@ class MyWindow(QWidget):
             if x >= hold_x+step*3:
                 x = hold_x
                 y += step
-        self.add_btn(self.keypad[0],x+step,y,w,h,func)
+        self.add_btn(self.keypad[0],x,y,w,h,func)
+        self.add_btn(QPushButton('.',self),x+step,y,w,h,func)
+        self.add_btn(QPushButton('e',self),x+step*2,y,w,h,func,QFont("Arial",12))
     def build_texts(self):
         self.eqn = QTextEdit(self)
         self.min = QTextEdit(self)

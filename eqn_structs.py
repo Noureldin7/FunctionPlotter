@@ -1,3 +1,4 @@
+import math
 class expression:
     def __init__(self,expr_list:list):
         self.expr_list = expr_list
@@ -39,3 +40,5 @@ class symbol:
             return self.value
         elif self.type==2:
             return x
+        elif self.type==3:
+            return math.e

@@ -37,6 +37,9 @@ def parse_rec(eqn:str, expr:expression, index=0, parent_op:str = '+'):
         elif eqn[index] == 'X':
             expr.expr_list.append(symbol(2, eqn[index]))
             index+=1
+        elif eqn[index] == 'e':
+            expr.expr_list.append(symbol(3, eqn[index]))
+            index+=1
         else:
             num = ""
             while index<len(eqn) and eqn[index] in nums:

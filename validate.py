@@ -8,6 +8,7 @@ nums = {'0','1','2','3','4','5','6','7','8','9'}
 # 4 => Got decimal point (Accepts only a number)
 # 5 => State Following state 4 similar to state 1 but doesn't accept decimal point
 # 6 => Dummy state to transform 2X to 2*X goes directly to state 3
+# 7 => e state similar to state 3 but can accept an X
 def validate(eqn:str,min,max) -> tuple[bool,str,str]:
     eqn_obj = []
     eqn_obj.append(eqn)
@@ -27,9 +28,9 @@ def validate_range(min,max) -> tuple[bool,str]:
     if valid:
         min_val = float(min)
         max_val = float(max)
-        if min_val > max_val:
+        if min_val >= max_val:
             valid = False
-            msg = "Invalid range: min can't be greater than max" 
+            msg = "Invalid range: min must be smaller than max" 
     return valid, msg
 def validate_numeric(string,name) -> tuple[bool,str]:
     valid = False
@@ -84,6 +85,21 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
                 case 5:
                     state = 6
                     continue
+                case 7:
+                    state = 6
+                    continue
+                case _:
+                    return False, "Invalid syntax near " + char
+        elif char=='e':
+            match state:
+                case 0:
+                    state = 7
+                case 1:
+                    state = 7
+                case 2:
+                    state = 7
+                case 5:
+                    state = 7
                 case _:
                     return False, "Invalid syntax near " + char
         elif char in nums:
@@ -116,6 +132,8 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
                     state = 2
                 case 5:
                     state = 2
+                case 7:
+                    state = 2
                 case _:
                     return False, "Invalid syntax near " + char
         elif char == '(':
@@ -128,7 +146,7 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
             if len(bracket_stack) == 0:
                 return False, "Unbalanced brackets"
             bracket_stack.pop()
-            if state == 1 or state == 3 or state == 5:
+            if state == 1 or state == 3 or state == 5 or state == 7:
                 state = 3
             else:
                 return False, "Invalid syntax near " + char
