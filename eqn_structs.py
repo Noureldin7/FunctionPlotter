@@ -18,11 +18,17 @@ class expression:
             right_op = self.expr_list[i].calc(x)
             match op:
                 case '^':
-                    ans = ans ** right_op
+                    try:
+                        ans = math.pow(ans,right_op)
+                    except:
+                        ans = float("inf")
                 case '*':
                     ans *= right_op
                 case '/':
-                    ans /= right_op
+                    if right_op==0:
+                        ans = float("inf")
+                    else:
+                        ans /= right_op
                 case '+':
                     ans += right_op
                 case '-':

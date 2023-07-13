@@ -7,12 +7,16 @@ def parse(eqn:str,min,max):
     parse_rec(eqn, start_expr)
     return funcCalc(start_expr,min,max)
 def funcCalc(func:expression,min,max):
-    pts = 1000
-    step = (max-min+1)/pts
-    x = np.arange(min,max,step)
+    pts = 5000
+    step = (max-min)/pts
+    x_range = np.arange(min,max+step,step)
+    x = []
     y = []
-    for i in x:
-        y.append(func.calc(i))
+    for i in x_range:
+        f_x = func.calc(i)
+        if f_x != float("inf"):
+            x.append(i)
+            y.append(f_x)
     return x,y
 def parse_rec(eqn:str, expr:expression, index=0, parent_op:str = '+'):
     last_op = parent_op
