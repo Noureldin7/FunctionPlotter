@@ -4,11 +4,10 @@ nums = {'0','1','2','3','4','5','6','7','8','9'}
 # 0 => Start State (Accepts open bracket, number, X, negative sign) 
 # 1 => Building a Number
 # 2 => Got an Operator
-# 3 => Got X
+# 3 => Got X or )
 # 4 => Got decimal point (Accepts only a number)
 # 5 => State Following state 4 similar to state 1 but doesn't accept decimal point
-# 6 => Dummy state to transform 2X to 2*X goes directly to state 3
-# 7 => e state similar to state 3 but can accept an X
+# 6 => e state similar to state 3 but can accept an X
 def validate(eqn:str,min,max) -> tuple[bool,str,str]:
     eqn_obj = []
     eqn_obj.append(eqn)
@@ -58,6 +57,9 @@ def validate_numeric(string,name) -> tuple[bool,str]:
             msg = "Valid"
         i+=1
     return valid,msg
+def inject_mul(i,eqn_obj:list[str]):
+    eqn_obj[0] = eqn_obj[0][:i] + '*' + eqn_obj[0][i:]
+    return i+1
 def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
     eqn = eqn_obj[0]
     if len(eqn) == 0:
@@ -66,40 +68,37 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
     state = 0
     i=0
     while i < len(eqn):
-        if state == 6:
-            eqn = eqn[:i] + '*' + eqn[i:]
-            eqn_obj[0] = eqn
-            i+=2
-            state = 3
-            continue
+        eqn = eqn_obj[0]
         char = eqn[i]
         if char=='X':
             match state:
                 case 0:
                     state = 3
                 case 1:
-                    state = 6
-                    continue
+                    state = 3
+                    i=inject_mul(i,eqn_obj)
                 case 2:
                     state = 3
                 case 5:
-                    state = 6
-                    continue
-                case 7:
-                    state = 6
-                    continue
+                    state = 3
+                    i=inject_mul(i,eqn_obj)
+                case 6:
+                    state = 3
+                    i=inject_mul(i,eqn_obj)
                 case _:
                     return False, "Invalid syntax near " + char
         elif char=='e':
             match state:
                 case 0:
-                    state = 7
+                    state = 6
                 case 1:
-                    state = 7
+                    state = 6
+                    i=inject_mul(i,eqn_obj)
                 case 2:
-                    state = 7
+                    state = 6
                 case 5:
-                    state = 7
+                    state = 6
+                    i=inject_mul(i,eqn_obj)
                 case _:
                     return False, "Invalid syntax near " + char
         elif char in nums:
@@ -132,21 +131,36 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
                     state = 2
                 case 5:
                     state = 2
-                case 7:
+                case 6:
                     state = 2
                 case _:
                     return False, "Invalid syntax near " + char
         elif char == '(':
             bracket_stack.append(char)
-            if state == 0 or state == 2:
-                state = 0
-            else:
-                return False, "Invalid syntax near " + char
+            match state:
+                case 0:
+                    state = 0
+                case 1:
+                    state = 0
+                    i = inject_mul(i,eqn_obj)
+                case 2:
+                    state = 0
+                case 3:
+                    state = 0
+                    i = inject_mul(i,eqn_obj)
+                case 5:
+                    state = 0
+                    i = inject_mul(i,eqn_obj)
+                case 6:
+                    state = 0
+                    i = inject_mul(i,eqn_obj)
+                case _:
+                    return False, "Invalid syntax near " + char
         elif char == ')':
             if len(bracket_stack) == 0:
                 return False, "Unbalanced brackets"
             bracket_stack.pop()
-            if state == 1 or state == 3 or state == 5 or state == 7:
+            if state == 1 or state == 3 or state == 5 or state == 6:
                 state = 3
             else:
                 return False, "Invalid syntax near " + char
