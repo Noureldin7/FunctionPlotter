@@ -27,9 +27,8 @@ class MyWindow(QWidget):
         self.canvas.setParent(self)
         self.canvas.move(75,180)
         self.toolbar = NavigationToolbar2QT(self.canvas,self.canvas)
+        self.curves = None
     def plot_click(self):
-        self.axes.clear()
-        config(self.axes)
         eqn_string = self.eqn.toPlainText()
         min_string = self.min.toPlainText()
         max_string = self.max.toPlainText()
@@ -38,8 +37,12 @@ class MyWindow(QWidget):
         if valid:
             # Call the backend logic
             x,y = parse(eqn_string,float(min_string),float(max_string))
+            if self.curves == None:
+                config(self.axes,(x[0],x[-1]),(min(y),max(y)))
+            else:
+                self.curves.pop(0).remove()
             # Plot the returned data
-            self.axes.plot(x,y)
+            self.curves = self.axes.plot(x,y,color='r')
             self.canvas.draw()
         else:
             self.error_msg = QMessageBox()
