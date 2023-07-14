@@ -5,10 +5,10 @@ from matplotlib.figure import Figure
 from PySide2.QtWidgets import QWidget,QPushButton,QTextEdit,QMessageBox,QApplication
 from PySide2.QtGui import QFont,QKeyEvent,QTextCursor,QFocusEvent
 from PySide2.QtCore import Qt
-from validate import validate,nums
+from validate import validate
 from plotter import config
-from function_parser import parse
-nums = nums.union({'.','-'})
+from function_parser import parse,nums
+nums = nums.union({'-'})
 class MyWindow(QWidget):
     misc_set:set = {Qt.Key_Left,Qt.Key_Right,Qt.Key_Plus,Qt.Key_Minus,Qt.Key_Asterisk,Qt.Key_Slash,Qt.Key_AsciiCircum,Qt.Key_ParenLeft,Qt.Key_ParenRight,Qt.Key_X,Qt.Key_Backspace}
     num_set:set = {Qt.Key_0,Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9,Qt.Key_Period,Qt.Key_Minus,Qt.Key_E}

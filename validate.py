@@ -1,14 +1,14 @@
-priority = {'^':2, '*':1, '/':1, '+':0, '-':0}
-ops = {'^', '*', '/', '+', '-'}
-nums = {'0','1','2','3','4','5','6','7','8','9'}
-# 0 => Start State (Accepts open bracket, number, X, negative sign) 
+from function_parser import nums, ops
+nums = nums.difference({'.'})
+# 0 => Start State (Accepts open bracket, number, e, X, negative sign) 
 # 1 => Building a Number
 # 2 => Got an Operator
 # 3 => Got X or )
 # 4 => Got decimal point (Accepts only a number)
-# 5 => State Following state 4 similar to state 1 but doesn't accept decimal point
+# 5 => State following state 4 similar to state 1 but doesn't accept decimal point
 # 6 => e state similar to state 3 but can accept an X
 def validate(eqn:str,min,max) -> tuple[bool,str,str]:
+    '''Validates the given equation and range'''
     eqn_obj = []
     eqn_obj.append(eqn)
     valid, msg = validate_eqn(eqn_obj)
@@ -16,14 +16,15 @@ def validate(eqn:str,min,max) -> tuple[bool,str,str]:
         valid, msg = validate_range(min,max)
     return valid, msg, eqn_obj[0]
 def validate_range(min,max) -> tuple[bool,str]:
+    '''Validates the range'''
     valid = True
     msg = "Valid"
-    # Check min
+    # Check if min is numeric
     valid, msg = validate_numeric(min,"min")
-    # Check max
+    # Check if max is numeric
     if valid:
         valid, msg = validate_numeric(max,"max")
-    # Check if min <= max
+    # Check if min < max
     if valid:
         min_val = float(min)
         max_val = float(max)
@@ -32,15 +33,18 @@ def validate_range(min,max) -> tuple[bool,str]:
             msg = "Invalid range: min must be smaller than max" 
     return valid, msg
 def validate_numeric(string,name) -> tuple[bool,str]:
+    '''Validates if the given string is a valid numeric value'''
     valid = False
     msg = "Invalid range: Invalid "+name+" value"
     if len(string) == 0:
         return False, "Invalid range: "+name+" is empty" 
     i = 0
+    # Negative sign is allowed only at the beginning
     if string[0] == '-':
         i = 1
     point_flag = False
     while i < len(string):
+        # Only 1 "." is allowed in the string
         if string[i] == '.':
             if point_flag:
                 valid = False
@@ -53,14 +57,17 @@ def validate_numeric(string,name) -> tuple[bool,str]:
             msg = "Invalid range: Unexpected negative sign in "+name+" value"
             break  
         else:
+            # At least 1 number is required (.1 => 0.1, 1. => 1.0)
             valid = True
             msg = "Valid"
         i+=1
     return valid,msg
 def inject_mul(i,eqn_obj:list[str]):
+    '''Splits the string at the given index and injects a multiplication operator'''
     eqn_obj[0] = eqn_obj[0][:i] + '*' + eqn_obj[0][i:]
-    return i+1
+    return i+1, eqn_obj[0]
 def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
+    '''Validates the given equation by tracing a finite state machine'''
     eqn = eqn_obj[0]
     if len(eqn) == 0:
         return False, "No Function is provided"
@@ -68,7 +75,6 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
     state = 0
     i=0
     while i < len(eqn):
-        eqn = eqn_obj[0]
         char = eqn[i]
         if char=='X':
             match state:
@@ -76,15 +82,15 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
                     state = 3
                 case 1:
                     state = 3
-                    i=inject_mul(i,eqn_obj)
+                    i, eqn = inject_mul(i,eqn_obj)
                 case 2:
                     state = 3
                 case 5:
                     state = 3
-                    i=inject_mul(i,eqn_obj)
+                    i, eqn = inject_mul(i,eqn_obj)
                 case 6:
                     state = 3
-                    i=inject_mul(i,eqn_obj)
+                    i, eqn = inject_mul(i,eqn_obj)
                 case _:
                     return False, "Invalid syntax near " + char
         elif char=='e':
@@ -93,12 +99,12 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
                     state = 6
                 case 1:
                     state = 6
-                    i=inject_mul(i,eqn_obj)
+                    i, eqn = inject_mul(i,eqn_obj)
                 case 2:
                     state = 6
                 case 5:
                     state = 6
-                    i=inject_mul(i,eqn_obj)
+                    i, eqn = inject_mul(i,eqn_obj)
                 case _:
                     return False, "Invalid syntax near " + char
         elif char in nums:

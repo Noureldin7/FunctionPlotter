@@ -1,45 +1,67 @@
+from abc import abstractmethod, ABC
 import math
-class expression:
-    def __init__(self,expr_list:list):
-        self.expr_list = expr_list
-        self.type = 3
+class parse_tree_node(ABC):
+    def __init__(self,type):
+        self.type = type
+        '''0: Numeric Constant\n1: Operator\n2: x\n3: e'''
+    @abstractmethod
+    def calc(self, x):
+        '''Calculates the value of the node given x'''
+        pass
+class expression(parse_tree_node):
+    '''Non-terminal Node'''
+    def __init__(self,node_list:list[parse_tree_node]):
+        super().__init__(4)
+        self.node_list = node_list
+        '''Children Nodes'''
     def calc(self, x):
         i = 1
-        left_op = self.expr_list[0]
-        ans = left_op.calc(x)
-        if len(self.expr_list) == 1:
-            return ans
-        if ans=='-':
-            ans = -self.expr_list[i].calc(x)
+        left_op = self.node_list[0]
+        # Set Result to first operand
+        result = left_op.calc(x)
+        if len(self.node_list) == 1:
+            return result
+        # If first symbol is negative, negate the following operand and set result to it
+        if result=='-':
+            result = -self.node_list[i].calc(x)
             i+=1
-        while i<len(self.expr_list):
-            op = self.expr_list[i].calc(x)
+        # Accumulate the following operands on the result based on the operator
+        while i<len(self.node_list):
+            # Get operator
+            op = self.node_list[i].calc(x)
             i+=1
-            right_op = self.expr_list[i].calc(x)
+            # Get operand
+            right_op = self.node_list[i].calc(x)
+            # Update result based on operator
             match op:
                 case '^':
                     try:
-                        ans = math.pow(ans,right_op)
+                        result = math.pow(result,right_op)
                     except:
-                        ans = float("inf")
+                        # Negative base with a non-integer exponent
+                        result = float("inf")
                 case '*':
-                    ans *= right_op
+                    result *= right_op
                 case '/':
                     if right_op==0:
-                        ans = float("inf")
+                        # Division by zero
+                        result = float("inf")
                     else:
-                        ans /= right_op
+                        result /= right_op
                 case '+':
-                    ans += right_op
+                    result += right_op
                 case '-':
-                    ans -= right_op
+                    result -= right_op
             i+=1
-        return ans
-class symbol:
+        return result
+class symbol(parse_tree_node):
+    '''Terminal Node'''
     def __init__(self, type, value):
-        self.type = type
+        super().__init__(type)
         self.value = value
+        '''Value of leaf node'''
     def calc(self, x):
+        '''Returns the suitable value based on the node type'''
         if self.type==0:
             return float(self.value)
         elif self.type==1:
