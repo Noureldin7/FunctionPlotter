@@ -20,24 +20,24 @@ def validate_range(min,max) -> tuple[bool,str]:
     valid = True
     msg = "Valid"
     # Check if min is numeric
-    valid, msg = validate_numeric(min,"min")
+    valid, msg = validate_numeric(min,"Min")
     # Check if max is numeric
     if valid:
-        valid, msg = validate_numeric(max,"max")
+        valid, msg = validate_numeric(max,"Max")
     # Check if min < max
     if valid:
         min_val = float(min)
         max_val = float(max)
         if min_val >= max_val:
             valid = False
-            msg = "Invalid range: min must be smaller than max" 
+            msg = "Min must be smaller than Max" 
     return valid, msg
 def validate_numeric(string,name) -> tuple[bool,str]:
     '''Validates if the given string is a valid numeric value'''
     valid = False
-    msg = "Invalid range: Invalid "+name+" value"
+    msg = "Invalid "+name+" value"
     if len(string) == 0:
-        return False, "Invalid range: "+name+" is empty" 
+        return False, name+" is empty" 
     i = 0
     # Negative sign is allowed only at the beginning
     if string[0] == '-':
@@ -48,13 +48,13 @@ def validate_numeric(string,name) -> tuple[bool,str]:
         if string[i] == '.':
             if point_flag:
                 valid = False
-                msg = "Invalid range: Unexpected decimal point in "+name+" value"
+                msg = "Unexpected decimal point in "+name+" value"
                 break 
             else:
                 point_flag = True
         elif string[i] == '-':
             valid = False
-            msg = "Invalid range: Unexpected negative sign in "+name+" value"
+            msg = "Unexpected negative sign in "+name+" value"
             break  
         else:
             # At least 1 number is required (.1 => 0.1, 1. => 1.0)

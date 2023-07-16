@@ -111,7 +111,7 @@ def test_empty_min(app:MyWindow,qtbot:QtBot):
     app.eqn.setText("X-2")
     app.max.setText("4")
     qtbot.mouseClick(app.btn_plot,Qt.LeftButton)
-    assert app.error_msg.text() == "Invalid range: min is empty"
+    assert app.error_msg.text() == "Min is empty"
     app.error_msg.close()
 
 def test_incorrect_min(app:MyWindow,qtbot:QtBot):
@@ -119,7 +119,7 @@ def test_incorrect_min(app:MyWindow,qtbot:QtBot):
     app.min.setText("-.")
     app.max.setText("4")
     qtbot.mouseClick(app.btn_plot,Qt.LeftButton)
-    assert app.error_msg.text() == "Invalid range: Invalid min value"
+    assert app.error_msg.text() == "Invalid Min value"
     app.error_msg.close()
 
 def test_min_not_smaller_than_max(app:MyWindow,qtbot:QtBot):
@@ -127,5 +127,5 @@ def test_min_not_smaller_than_max(app:MyWindow,qtbot:QtBot):
     app.min.setText("4")
     app.max.setText("0")
     qtbot.mouseClick(app.btn_plot,Qt.LeftButton)
-    assert app.error_msg.text() == "Invalid range: min must be smaller than max"
+    assert app.error_msg.text() == "Min must be smaller than Max"
     app.error_msg.close()

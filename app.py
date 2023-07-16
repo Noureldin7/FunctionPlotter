@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg,NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PySide2.QtWidgets import QWidget,QPushButton,QTextEdit,QMessageBox,QApplication,QMainWindow
+from PySide2.QtWidgets import QPushButton,QTextEdit,QMessageBox,QApplication,QMainWindow,QLabel,QSizePolicy
 from PySide2.QtGui import QFont,QKeyEvent,QTextCursor
 from PySide2.QtCore import Qt
 from validate import validate
@@ -47,9 +47,11 @@ class MyWindow(QMainWindow):
             self.curves = self.axes.plot(x,y,color='r')
             self.canvas.draw()
         else:
-            self.error_msg = QMessageBox()
-            self.error_msg.setWindowTitle("Error")
+            self.error_msg = QMessageBox(self)
+            label:QLabel = self.error_msg.children()[2]
             self.error_msg.setText(msg)
+            label.setMinimumHeight(50)
+            self.error_msg.setWindowTitle("Error")
             self.error_msg.show()
 
     def key_click(self):
@@ -146,7 +148,7 @@ class MyWindow(QMainWindow):
         self.add_text(self.eqn,"Enter Equation Here",75,25,300,40,QFont("Arial",18))
         self.add_text(self.min,"Min",75,75,75,30,QFont("Arial",12))
         self.add_text(self.max,"Max",175,75,75,30,QFont("Arial",12))
-        
+
     def update_focused(self,e):
         if not isinstance(self.focusWidget(),QPushButton):
             self.focused = self.focusWidget()
