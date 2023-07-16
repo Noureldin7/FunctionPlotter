@@ -8,19 +8,42 @@ def parse(eqn:str,min,max):
     parse_tree = expression([])
     parse_rec(eqn, parse_tree)
     return funcCalc(parse_tree,min,max)
-def funcCalc(func:expression,min,max):
+def funcCalc(func:expression,min,max,pts=20000,deep_flag=False):
     '''Calculates f(x) for given range of x values given a parse tree'''
-    pts = 5000  # Number of points to calculate
     step = (max-min)/pts
     x_range = np.arange(min,max+step,step)
     x = []
     y = []
+    prev_index = -1
+    dy_sign = 0
+    dy_sign_changed = False
+    # dy_sign_state = 0 # Captures 2 changes in sign in 2 steps
     for i in x_range:
         f_x = func.calc(i)
         # Invalid values are not included in the plot (Infinity, imaginary numbers, etc.)
-        if f_x != float("inf"):
-            x.append(i)
-            y.append(f_x)
+        if f_x == float("inf"):
+            continue
+        if prev_index > -1:
+            new_dy = f_x - y[prev_index]
+            new_dy_sign = 0 if (new_dy < 1e-15 and new_dy > -1e-15) else (1 if new_dy > 0 else -1)
+            dy_sign_changed = dy_sign*new_dy_sign<0
+            if new_dy_sign!=0:
+                dy_sign = new_dy_sign
+        prev_index+=1
+        if dy_sign_changed:
+            if deep_flag:
+                y.pop()
+                y.append(np.nan)
+            else:
+                x.pop()
+                deep_min = x.pop()
+                y.pop()
+                y.pop()
+                temp_x, temp_y = funcCalc(func, deep_min, i, 10000, True)
+                x.extend(temp_x)
+                y.extend(temp_y)
+        x.append(i)
+        y.append(f_x)
     return x,y
 def parse_rec(eqn:str, expr:expression, index=0, parent_op:str = '+'):
     '''Constructs a parse tree for given eqn string'''

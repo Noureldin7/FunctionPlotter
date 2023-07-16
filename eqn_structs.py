@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 import math
+import numpy as np
 class parse_tree_node(ABC):
     def __init__(self,type):
         self.type = type
@@ -43,7 +44,7 @@ class expression(parse_tree_node):
                 case '*':
                     result *= right_op
                 case '/':
-                    if right_op==0:
+                    if right_op>-0.000001 and right_op<0.000001:
                         # Division by zero
                         result = float("inf")
                     else:

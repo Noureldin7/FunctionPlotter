@@ -3,5 +3,5 @@
 - ### ~~Infinity Support~~
 - ### ~~Fix Plot Axis~~
 - ### ~~Add e and pi maybe~~
-- ### Imaginary Numbers ??
-- ### Dynamic Steps based on range
+- ### ~~Imaginary Numbers ??~~
+- ### 1/x
