@@ -1,7 +1,0 @@
-- ### ~~Decimal Numbers Support~~
-- ### ~~2*X -> 2X~~
-- ### ~~Infinity Support~~
-- ### ~~Fix Plot Axis~~
-- ### ~~Add e and pi maybe~~
-- ### ~~Imaginary Numbers ??~~
-- ### 1/x
