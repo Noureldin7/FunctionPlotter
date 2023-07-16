@@ -166,10 +166,17 @@ def validate_eqn(eqn_obj:list[str]) -> tuple[bool,str]:
             if len(bracket_stack) == 0:
                 return False, "Unbalanced brackets"
             bracket_stack.pop()
-            if state == 1 or state == 3 or state == 5 or state == 6:
-                state = 3
-            else:
-                return False, "Invalid syntax near " + char
+            match state:
+                case 1:
+                    state = 3
+                case 3:
+                    state = 3
+                case 5:
+                    state = 3
+                case 6:
+                    state = 3
+                case _:
+                    return False, "Invalid syntax near " + char
         else:
             return False, "Unexpected character " + char
         i+=1

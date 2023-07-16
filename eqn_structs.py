@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 import math
-import numpy as np
-class parse_tree_node(ABC):
+class ParseTreeNode(ABC):
+    '''Node Base Class'''
     def __init__(self,type):
         self.type = type
         '''0: Numeric Constant\n1: Operator\n2: x\n3: e'''
@@ -9,9 +9,9 @@ class parse_tree_node(ABC):
     def calc(self, x):
         '''Calculates the value of the node given x'''
         pass
-class expression(parse_tree_node):
+class Expression(ParseTreeNode):
     '''Non-terminal Node'''
-    def __init__(self,node_list:list[parse_tree_node]):
+    def __init__(self,node_list:list[ParseTreeNode]):
         super().__init__(4)
         self.node_list = node_list
         '''Children Nodes'''
@@ -22,7 +22,7 @@ class expression(parse_tree_node):
         result = left_op.calc(x)
         if len(self.node_list) == 1:
             return result
-        # If first symbol is negative, negate the following operand and set result to it
+        # If first Symbol is negative, negate the following operand and set result to it
         if result=='-':
             result = -self.node_list[i].calc(x)
             i+=1
@@ -55,7 +55,7 @@ class expression(parse_tree_node):
                     result -= right_op
             i+=1
         return result
-class symbol(parse_tree_node):
+class Symbol(ParseTreeNode):
     '''Terminal Node'''
     def __init__(self, type, value):
         super().__init__(type)
